@@ -69,7 +69,7 @@ public class RobotContainer {
 
     // Establish a Sendable Chooser that will be able to be sent to the
     // SmartDashboard, allowing selection of desired auto
-    private final SendableChooser<Command> autoChooser;
+//    private final SendableChooser<Command> autoChooser;
 
 
 //    private final TurretSubsystem turretSubsystem = new TurretSubsystem(
@@ -154,23 +154,23 @@ public class RobotContainer {
         DriverStation.silenceJoystickConnectionWarning(true);
 
         // Register NamedCommands that will be used in PathPlanner if using custom created commands
-        NamedCommands.registerCommand("test", Commands.print("I EXIST"));
-
-        //Have the autoChooser pull in all PathPlanner autos as options
-        autoChooser = AutoBuilder.buildAutoChooser();
-
-        // Set the default auto (do nothing)
-//        autoChooser.setDefaultOption("Do Nothing", Commands.runOnce(drivebase::zeroGyroWithAlliance)
-//                .andThen(Commands.none()));
-        autoChooser.setDefaultOption("Do Nothing", Commands.none());
-
-
-        // Put the autoChooser on the SmartDashboard
-        SmartDashboard.putData("Auto Chooser", autoChooser);
-
-        if (autoChooser.getSelected() == null) {
-            // RobotModeTriggers.autonomous().onTrue(Commands.runOnce(drivebase::zeroGyroWithAlliance));
-        }
+//        NamedCommands.registerCommand("test", Commands.print("I EXIST"));
+//
+//        //Have the autoChooser pull in all PathPlanner autos as options
+//        autoChooser = AutoBuilder.buildAutoChooser();
+//
+//        // Set the default auto (do nothing)
+////        autoChooser.setDefaultOption("Do Nothing", Commands.runOnce(drivebase::zeroGyroWithAlliance)
+////                .andThen(Commands.none()));
+//        autoChooser.setDefaultOption("Do Nothing", Commands.none());
+//
+//
+//        // Put the autoChooser on the SmartDashboard
+//        SmartDashboard.putData("Auto Chooser", autoChooser);
+//
+//        if (autoChooser.getSelected() == null) {
+//            // RobotModeTriggers.autonomous().onTrue(Commands.runOnce(drivebase::zeroGyroWithAlliance));
+//        }
 
         // After Auto but before Alliance specific setup
         configureBindings();
@@ -248,7 +248,8 @@ public class RobotContainer {
     public Command getAutonomousCommand() {
         // Pass in the selected auto from the SmartDashboard as our desired autnomous
         // commmand
-        return autoChooser.getSelected();
+        // return autoChooser.getSelected();
+        return Commands.none();
     }
 
 
