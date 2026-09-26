@@ -60,6 +60,9 @@ public class Robot extends TimedRobot {
         if (isSimulation()) {
             DriverStation.silenceJoystickConnectionWarning(true);
         }
+
+        // Update Driver Alliance information if available
+        m_robotContainer.updateDriverAllianceInfo();
     }
 
 
@@ -118,6 +121,7 @@ public class Robot extends TimedRobot {
         m_robotContainer.setMotorBrake(true);
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
+        // Always update as we are assuming correct orrientation before periodic start
         m_robotContainer.updateDriverAllianceInfo();
 
         // Print the selected autonomous command upon autonomous init
@@ -148,7 +152,8 @@ public class Robot extends TimedRobot {
         } else {
             CommandScheduler.getInstance().cancelAll();
         }
-        m_robotContainer.updateDriverAllianceInfo();
+
+        // Reset Closed Loop Motor Controllers to zero or default (useful for transition between auto and teleop)
         m_robotContainer.resetSubsystems();
     }
 
