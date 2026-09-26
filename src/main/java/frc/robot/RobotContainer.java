@@ -4,32 +4,17 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.*;
-import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.turretcommands.AutoTurretPassToAlliance;
-import frc.robot.commands.turretcommands.AutoTurretTargeting;
-import frc.robot.commands.turretcommands.AutoTurretTargetingPose;
 import frc.robot.subsystems.ArcadeDriveSubsystem;
-import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.motors.Components;
-import java.io.File;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.vision.LimelightRunner;
-import swervelib.SwerveInputStream;
 
 
 /**
@@ -209,6 +194,10 @@ public class RobotContainer {
         } else {
 //            drivebase.setDefaultCommand(driveFieldOrientedBlueAlliance);
 //            joystickDriver.button(11).whileTrue(driveFieldOrientedBlueAllianceSlow);
+            arcadeDrivebase.setDefaultCommand(
+                    Commands.runOnce(
+                            this::arcadeDrive
+                    ).repeatedly() );
         }
 
         if (Robot.isSimulation()) {
