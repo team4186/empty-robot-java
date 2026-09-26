@@ -1,0 +1,485 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
+package frc.robot;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.*;
+import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.auto.DriveBackAndPrepare;
+import frc.robot.commands.auto.DriveBackAndShoot;
+import frc.robot.commands.intakecommands.ExtendIntakeCommand;
+import frc.robot.commands.intakecommands.RetractIntakeCommand;
+import frc.robot.commands.turretcommands.AutoTurretPassToAlliance;
+import frc.robot.commands.turretcommands.AutoTurretTargeting;
+import frc.robot.commands.turretcommands.AutoTurretTargetingPose;
+import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.*;
+import frc.robot.motors.Components;
+import java.io.File;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.vision.LimelightRunner;
+import swervelib.SwerveInputStream;
+import frc.robot.commands.climbCommand.*;
+import frc.robot.Constants.IntakeConstants;
+
+/**
+ * This class is where the bulk of the robot should be declared. Since
+ * Command-based is a "declarative" paradigm, very
+ * little robot logic should actually be handled in the {@link Robot} periodic
+ * methods (other than the scheduler calls).
+ * Instead, the structure of the robot (including subsystems, commands, and
+ * trigger mappings) should be declared here.
+ */
+public class RobotContainer {
+
+    // Replace with CommandPS4Controller or CommandJoystick if needed
+    private final CommandXboxController driverXbox = new CommandXboxController(3);
+    private final CommandPS5Controller driverPS5 = new CommandPS5Controller(4);
+    private final CommandStadiaController driverStadia = new CommandStadiaController(5);
+    private final CommandJoystick joystickDriver = new CommandJoystick(0); //set port 0 for stadia/joystick, whichever is being used
+    private final CommandJoystick joystickOperator = new CommandJoystick(1);
+
+    private final Components motorComponents = Components.getInstance();
+
+    // The robot's subsystems and commands are defined here...
+    private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
+            "swerve/maxSwerve"));
+
+    // Establish a Sendable Chooser that will be able to be sent to the
+    // SmartDashboard, allowing selection of desired auto
+    private final SendableChooser<Command> autoChooser;
+
+    // TODO: Test and uncomment subsystems
+    private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(
+            motorComponents.getIntakeExtensionStarboardMotor(),
+            motorComponents.getIntakeExtensionPortMotor(),
+            motorComponents.getIntakePickupMotor(),
+//            motorComponents.getIntakeExtensionMotorPair(),
+            new DigitalInput(IntakeConstants.EXTENDED_LSChannel_STARBOARD),
+            new DigitalInput(IntakeConstants.EXTENDED_LSChannel_PORT),
+            new DigitalInput(IntakeConstants.RETRACTED_LSChannel_STARBOARD),
+            new DigitalInput(IntakeConstants.RETRACTED_LSChannel_PORT)
+    );
+
+
+    private final SpindexerSubsystem spindexerSubsystem = new SpindexerSubsystem(
+            motorComponents.getSpindexerRotateMotor(),
+            motorComponents.getSpindexerFeedMotor(),
+            motorComponents.getSpindexerAssist()
+    );
+
+
+    private final ClimbSubsystem climbSubsystem = new ClimbSubsystem(
+            motorComponents.getClimbMotor(),
+            new DigitalInput(Constants.ClimbConstants.CLIMB_LSChannel)
+    );
+
+
+    private final TurretSubsystem turretSubsystem = new TurretSubsystem(
+            motorComponents.getTurretShooterMotor(),
+            motorComponents.getTurretRotateMotor(),
+            motorComponents.getTurretHoodMotor(),
+            new DigitalInput(Constants.TurretConstants.HOOD_LIMIT_SWITCH),
+            new DigitalInput(Constants.TurretConstants.TURRET_LEFT_LIMIT_SWITCH),
+            new DigitalInput(Constants.TurretConstants.TURRET_RIGHT_LIMIT_SWITCH)
+    );
+
+
+    //Intake Commands
+    ExtendIntakeCommand extendIntakeCommand = new ExtendIntakeCommand(intakeSubsystem);
+    RetractIntakeCommand retractIntakeCommand = new RetractIntakeCommand(intakeSubsystem);
+
+    //Auto All in One Commands
+    DriveBackAndShoot driveBackAndShootCommand = new DriveBackAndShoot(turretSubsystem,intakeSubsystem, drivebase,spindexerSubsystem);
+    DriveBackAndPrepare driveBackandLock = new DriveBackAndPrepare(drivebase, -1.0, 1.0);
+
+    //Me AND Rishab goon to femboys but no one will ever see this comment becasue it's at the bottom 3.
+
+    //Climb Commands
+    DeployClimbCommand deployClimbCommand = new DeployClimbCommand(climbSubsystem, Constants.ClimbConstants.CLIMB_SLOW_SPEED);
+    RetractClimbCommand retractClimbCommand = new RetractClimbCommand(climbSubsystem, Constants.ClimbConstants.CLIMB_SLOW_SPEED);
+
+    AutoTurretTargeting simpleTurretTracking = new AutoTurretTargeting(turretSubsystem);
+    AutoTurretPassToAlliance simplePassing = new AutoTurretPassToAlliance(turretSubsystem);
+    AutoTurretTargetingPose simplePoseTracking = new AutoTurretTargetingPose(turretSubsystem);
+
+    // NOTE:  Coords are odd for Joysticks: https://docs.wpilib.org/en/stable/docs/software/basic-programming/joystick.html
+    /**
+     * Converts driver input into a field-relative ChassisSpeeds that is controlled
+     * by angular velocity.
+     */
+    SwerveInputStream driveAngularVelocityBlueJoystick = SwerveInputStream.of(
+                    drivebase.getSwerveDrive(),
+            () -> attenuated( joystickDriver.getY(), 2, 1.0 ) * -1,
+            () -> attenuated( joystickDriver.getX(), 2, 1.0 ) * -1)
+            .withControllerRotationAxis(
+                    () -> attenuated( joystickDriver.getTwist(), 2, 0.75 ) * -1)
+            .deadband(OperatorConstants.DEADBAND)
+            .allianceRelativeControl(true);
+
+    SwerveInputStream driveAngularVelocitySlowBlueJoystick = SwerveInputStream.of(
+            drivebase.getSwerveDrive(),
+            () -> attenuated( joystickDriver.getY(), 2, 0.25 ) * -1,
+            () -> attenuated( joystickDriver.getX(), 2, 0.25 ) * -1)
+        .withControllerRotationAxis(
+            () -> attenuated( joystickDriver.getTwist(), 2, 0.75 ) * -1)//scale originally 0.5
+        .deadband(OperatorConstants.DEADBAND)
+        .allianceRelativeControl(true);
+
+
+    SwerveInputStream driveStadia = SwerveInputStream.of(
+                    drivebase.getSwerveDrive(),
+                    () -> attenuated( driverStadia.getLeftY(), 2, 1.0 ) * -1,
+                    () -> attenuated( driverStadia.getLeftX(), 2, 1.0 ) * -1)
+            .withControllerRotationAxis(
+                     () -> driverStadia.getRawAxis(3))
+                    //driverStadia::getRightX)
+            // () -> attenuated( joystickDriver.getTwist(), 3, 0.75 ) * 1)
+            .deadband(OperatorConstants.DEADBAND)
+            .scaleTranslation(0.4)
+            .allianceRelativeControl(true);
+
+    SwerveInputStream driveStadiaHeadingAxis = driveStadia.copy().withControllerHeadingAxis(
+                    driverStadia::getRightX,
+                    driverStadia::getRightY)
+            .headingWhile(true);
+
+
+    SwerveInputStream driveFieldPS5 = SwerveInputStream.of(
+            drivebase.getSwerveDrive(),
+            () -> attenuated( driverPS5.getLeftY(), 2, 1.0 ) * -1,
+            () -> attenuated( driverPS5.getLeftX(), 2, 1.0 ) * -1)
+        .withControllerRotationAxis(
+            driverPS5::getRightX)
+        .deadband(OperatorConstants.DEADBAND)
+        .allianceRelativeControl(true);
+
+    SwerveInputStream driveHeadingAxisPS5 = driveFieldPS5.copy().withControllerHeadingAxis(
+            driverPS5::getRightX,
+            driverPS5::getRightY)
+        .headingWhile(true);
+
+
+    /**
+     * The container for the robot. Contains subsystems, OI devices, and commands.
+     */
+    public RobotContainer() {
+        // Configure the trigger bindings
+        DriverStation.silenceJoystickConnectionWarning(true);
+
+        // Create the NamedCommands that will be used in PathPlanner
+        NamedCommands.registerCommand("test", Commands.print("I EXIST"));
+        NamedCommands.registerCommand("climb_arm_up",Commands.runOnce(() ->
+                climbSubsystem.simpleClimbDeploy(1.0), climbSubsystem).repeatedly());
+        NamedCommands.registerCommand("climb_arm_down",Commands.runOnce(() ->
+                climbSubsystem.simpleClimbMoveDown(-1.0), climbSubsystem).repeatedly());
+
+        NamedCommands.registerCommand("drive_back_and_lock", driveBackandLock);
+        NamedCommands.registerCommand("run_spindexer", Commands.runOnce(spindexerSubsystem::feed).repeatedly());
+        NamedCommands.registerCommand("turret_targeting", simplePoseTracking);
+
+
+
+
+        //Have the autoChooser pull in all PathPlanner autos as options
+        autoChooser = AutoBuilder.buildAutoChooser();
+
+        // Set the default auto (do nothing)
+        autoChooser.setDefaultOption("Do Nothing", Commands.runOnce(drivebase::zeroGyroWithAlliance)
+                .andThen(Commands.none()));
+
+        // Add a simple auto option to have the robot drive forward for 1 second then
+        // stop
+        autoChooser.addOption("Drive Forward",
+                Commands.runOnce(drivebase::zeroGyroWithAlliance).withTimeout(.2)
+                .andThen(drivebase.driveForward().withTimeout(1)));
+
+        autoChooser.addOption("Drive Backward",
+                Commands.runOnce(drivebase::zeroGyroWithAlliance).withTimeout(.2)
+                        .andThen(drivebase.driveBackward().withTimeout(1)));
+
+//        autoChooser.addOption(
+//                "Back Up and Shoot",
+//                Commands.runOnce(drivebase::zeroGyroWithAlliance).withTimeout(.2)
+//                        .andThen( turretSubsystem.setShooterMotor(3000).withTimeout(1))
+//                        .andThen(drivebase.driveBackward().withTimeout(1.0))
+//                        .andThen(Commands.run(()->turretSubsystem.moveHoodUp(5,0.1)).withTimeout(0.6))
+//                        .andThen(Commands.run(spindexerSubsystem::feed, spindexerSubsystem).withTimeout(10.0))
+//
+//        );
+//        autoChooser.addOption(
+//                "Back Up and Shoot with shuffle",
+//                Commands.runOnce(drivebase::zeroGyroWithAlliance).withTimeout(.2)
+//                        .andThen( turretSubsystem.setShooterMotor(3000).withTimeout(1))
+//                        .andThen(drivebase.driveForward().withTimeout(1.0))
+//                        .andThen(Commands.run(()->turretSubsystem.moveHoodUp(5,0.1)).withTimeout(0.6))
+//                        .andThen(Commands.run(spindexerSubsystem::feed, spindexerSubsystem).withTimeout(7.0))
+//                        .andThen(Commands.run(intakeSubsystem::extendIntake,intakeSubsystem).withTimeout(1.0))
+//                        .andThen(Commands.run(intakeSubsystem::retractIntake,intakeSubsystem).withTimeout(1.0))
+//                        .andThen(Commands.run(spindexerSubsystem::feed, spindexerSubsystem).withTimeout(5.0))
+//        );
+
+
+        autoChooser.addOption("Back Up and Shoot (Better)", driveBackAndShootCommand);
+
+        // Put the autoChooser on the SmartDashboard
+        SmartDashboard.putData("Auto Chooser", autoChooser);
+
+        if (autoChooser.getSelected() == null) {
+            RobotModeTriggers.autonomous().onTrue(Commands.runOnce(drivebase::zeroGyroWithAlliance));
+        }
+
+        // After Auto but before Alliance specific setup
+        configureBindings();
+
+        // Update Alliance Relevant info
+        updateDriverAllianceInfo();
+    }
+
+
+    /**
+     * Use this method to define your trigger->command mappings. Triggers can be
+     * created via the
+     * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with
+     * an arbitrary predicate, or via the
+     * named factories in
+     * {@link edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses
+     * for
+     * {@link CommandXboxController
+     * Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller PS4}
+     * controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick
+     * Flight joysticks}.
+     */
+    private void configureBindings() {
+
+        Command driveFieldOrientedStadia = drivebase.driveFieldOriented(driveStadia);
+
+        Command driveFieldOrientedPS5 = drivebase.driveFieldOriented(driveFieldPS5);
+        Command driveFieldHeadingPS5 = drivebase.driveFieldOriented(driveHeadingAxisPS5);
+
+        Command driveFieldOrientedBlueAlliance = drivebase.driveFieldOriented(driveAngularVelocityBlueJoystick);
+        Command driveFieldOrientedBlueAllianceSlow = drivebase.driveFieldOriented(driveAngularVelocitySlowBlueJoystick);
+
+
+        if (RobotBase.isSimulation()) {
+            // drivebase.setDefaultCommand(driveFieldOrientedPS5);
+            // drivebase.setDefaultCommand(driveFieldHeadingPS5);
+
+            drivebase.setDefaultCommand(driveFieldOrientedBlueAlliance);
+            joystickDriver.button(11).whileTrue(driveFieldOrientedBlueAllianceSlow);
+            joystickDriver.button(5).whileTrue(drivebase.centerModulesCommand());
+            joystickDriver.button(6).whileTrue(Commands.runOnce(drivebase::lock));
+
+        } else {
+            // drivebase.setDefaultCommand(driveFieldOrientedAngularVelocityJoystick);
+            // updateDriverAllianceControls(); // TODO: Confirm one setup works for both sides of the field after field Zero
+            drivebase.setDefaultCommand(driveFieldOrientedBlueAlliance);
+            joystickDriver.button(11).whileTrue(driveFieldOrientedBlueAllianceSlow);
+
+
+        }
+
+        if (Robot.isSimulation()) {
+            // Create a target pose with destination, hold button to drive to pose
+            Pose2d targetPose = new Pose2d(new Translation2d(15, 4),
+                    Rotation2d.fromDegrees(180));
+            driverPS5.cross().whileTrue(drivebase.driveToPose(targetPose));
+        }
+
+        if (DriverStation.isTest()) {
+            driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+            driverXbox.start().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+            driverXbox.back().whileTrue(drivebase.centerModulesCommand());
+            driverXbox.leftBumper().onTrue(Commands.none());
+            driverXbox.rightBumper().onTrue(Commands.none());
+            //            joystickOperator.button(10)
+//                    .onTrue(Commands.runOnce(() -> drivebase.resetOdometry(startPose)));
+//
+//            joystickOperator.button(11).whileTrue(drivebase.driveToPose(targetPose));
+
+            joystickOperator.trigger().whileTrue(Commands.runOnce(spindexerSubsystem::feed, spindexerSubsystem).repeatedly());
+
+        } else {
+           //Teleop Command Keybinds
+
+            // TODO: Test align to target on field, physically align the robot to ideal position and note it here
+            turretSubsystem.setDefaultCommand(Commands.runOnce(turretSubsystem::returnTurretToZero, turretSubsystem));
+
+
+           //DRIVER:
+           joystickDriver.trigger()
+                   .whileTrue(spindexerSubsystem.rotateMotors())
+                   .whileFalse(spindexerSubsystem.stopFeed());
+            joystickDriver.button(2)
+                    .whileTrue(intakeSubsystem.outake(0.2))
+                    .onFalse(intakeSubsystem.stopPickupMotor());
+             //   TODO:  create command to set pickup speed reverse, has priority over auto set
+           //TODO: create command to rotate turret maually for buttons 3,4,and5
+
+//            joystickDriver.button(6)
+//                   .whileTrue();
+           joystickDriver.button(7)
+                    .whileTrue(Commands.runOnce(
+                            ()->climbSubsystem.simpleClimbDeploy(Constants.ClimbConstants.CLIMB_MAX_SPEED), climbSubsystem).repeatedly())
+                    .onFalse(Commands.runOnce(climbSubsystem::climbStop, climbSubsystem));
+           joystickDriver.button(8)
+                    .whileTrue(Commands.runOnce(
+                            ()->climbSubsystem.simpleClimbMoveDown(Constants.ClimbConstants.CLIMB_MAX_SPEED), climbSubsystem).repeatedly())
+                    .onFalse(Commands.runOnce(climbSubsystem::climbStop, climbSubsystem));
+           //joystickDriver.button(9).whileTrue(drivebase.centerModulesCommand());TODO: might be useful for testing?
+           joystickDriver.button(9).whileTrue(Commands.runOnce(drivebase::lock));
+           joystickDriver.button(12).onTrue((Commands.runOnce(drivebase::zeroGyroWithAlliance)));
+
+
+            //OPERATOR:
+            joystickOperator.trigger()
+                    .whileTrue(simplePoseTracking);
+            joystickOperator.button(2)
+                    .whileTrue(simpleTurretTracking);
+            joystickOperator.button(3)
+                .whileTrue(turretSubsystem.setShooterMotor(0.0));
+
+            joystickOperator.button(5)
+                    .whileTrue(intakeSubsystem.autoSetPickupSpeed())
+                    .onFalse(intakeSubsystem.stopPickupMotor());
+
+            joystickOperator.button(7)
+                    .whileTrue(simplePassing);
+
+            joystickOperator.button(9)
+                    .whileTrue(intakeSubsystem.extendIntake())
+                    .whileFalse(Commands.runOnce(intakeSubsystem::stopTranslation, intakeSubsystem));
+
+            joystickOperator.button(8)
+                    .whileTrue(turretSubsystem.setShooterMotor(3000.0))
+                    .onFalse(turretSubsystem.setShooterMotor(0.0));
+            joystickOperator.button(11)
+                    .whileTrue(intakeSubsystem.retractIntake())
+                    .whileFalse(Commands.runOnce(intakeSubsystem::stopTranslation, intakeSubsystem));
+            ;
+//            joystickOperator.button(12)
+//                    .onTrue(turretSubsystem.setShooterMotor(0.0));
+
+
+//            joystickDriver.button(10).whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+
+            // TODO: Shuffle Intake
+            // joystickOperator.button( <> )
+
+            // TODO: set default command to go to 0
+            // turretSubsystem.setDefaultCommand(Commands.runOnce(turretSubsystem::returnTurretToZero).repeatedly());
+
+            // TODO: passing turret button ( Aim towards wall using gyro)
+
+            // TODO: Passing turret button ( Aim towards coordinates )
+
+            // TODO: scoring turret button (Simple align to april tag)
+
+            // TODO: scoring turret button (Align with update pose offset) TEST TO CONFIRM, this might act strange if we are not careful
+
+            // TODO: Shooting aka spindexer and motor feed balls if shooter wheel is spinning (we should also force the shooter wheel to be kcoast by default anyways)
+
+//            joystickOperator.button(2)
+//                    .whileTrue(intakeSubsystem.stopPickupMotor());
+
+//            joystickOperator.button(5)
+//                    .whileTrue(intakeSubsystem.setSlowPickup(IntakeConstants.INTAKE_SPEED_SLOW))
+//                    .whileFalse(intakeSubsystem.stopPickupMotor());
+
+//
+//            joystickOperator.button(7)
+//                    .whileTrue(intakeSubsystem.shuffleIntakeCommand())
+//                    .whileFalse(Commands.runOnce(intakeSubsystem::stopTranslation, intakeSubsystem));
+
+            // TODO: Test setting to specific hood angle
+            // joystickOperator.button(12).onTrue(Commands.runOnce(() -> turretSubsystem.updateHoodAngle(20)));
+
+            // TODO: Orientation will depend on side it is approached from, give translation constant and set orientation here
+//            joystickDriver.button(9).whileTrue(drivebase.driveToPose(
+//                new Pose2d(
+//                    Constants.StructureConstants.RED_CLIMB_NORTH_POLE.getX()+Constants.StructureConstants.ROBOT_X_CLIMBING_OFFSET,
+//                    Constants.StructureConstants.RED_CLIMB_NORTH_POLE.getY(),
+//                    Rotation2d.fromDegrees(0))));
+
+            //TODO: Uncomment for drive team after subsystem testing
+            //Intake Command keybind
+//            joystickDriver.button(5).onTrue(extendIntakeCommand);
+//            joystickDriver.button(3).onTrue(retractIntakeCommand);
+//            joystickOperator.button(2).onTrue(intakeSubsystem.setSlowPickup(IntakeConstants.PICKUP_SLOW_SPEED));
+//            joystickOperator.button(7).onTrue(intakeSubsystem.stopPickupMotor());
+
+            //Climb Command keybinds
+
+//            driverStadia.leftTrigger().whileTrue(driveFieldOrientedAngularVelocityStadia);
+
+            driverStadia.leftBumper().onTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+            driverStadia.rightBumper().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+            // driverStadia.a().whileTrue(drivebase.driveToPose(targetPose));
+
+            driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+            driverXbox.start().whileTrue(Commands.none());
+            driverXbox.back().whileTrue(Commands.none());
+            driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+            driverXbox.rightBumper().onTrue(Commands.none());
+        }
+    }
+
+
+    //TODO: Finish at field
+    public void updateDriverAllianceInfo(){
+        var alliance = DriverStation.getAlliance();
+        LimelightRunner limelightRunner = LimelightRunner.getInstance();
+        String turret = Constants.LimelightConstants.LIMELIGHT_TURRET;
+
+        boolean isRedAlliance = (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red);
+
+        // limelightRunner.turretPipelineSetup( isRedAlliance );
+    }
+
+
+    /**
+     * Use this to pass the autonomous command to the main {@link Robot} class.
+     *
+     * @return the command to rotateMotors in autonomous
+     */
+    public Command getAutonomousCommand() {
+        // Pass in the selected auto from the SmartDashboard as our desired autnomous
+        // commmand
+        return autoChooser.getSelected();
+    }
+
+
+    public void setMotorBrake(boolean brake) {
+        drivebase.setMotorBrake(brake);
+    }
+
+
+    private double attenuated(double value, int exponent, double scale) {
+        double res = scale * Math.pow( Math.abs(value), exponent );
+        if ( value < 0 ) { res *= -1; }
+        return res;
+    }
+
+    public void resetSubsystems(){
+        turretSubsystem.updateShooterSpeed(0.0);
+        spindexerSubsystem.stopMotors();
+        turretSubsystem.updateTurretRotation(0.0);
+        intakeSubsystem.stopPickup();
+    }
+}
