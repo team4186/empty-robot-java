@@ -2,7 +2,9 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 
+
 public class UnitsUtility {
+    // Broken beam logic with catch for rare illegal state exception
     public static boolean isBeamBroken(DigitalInput limitSwitch, boolean defaultReturnValue, String systemName ){
         try {
             return limitSwitch.get();
