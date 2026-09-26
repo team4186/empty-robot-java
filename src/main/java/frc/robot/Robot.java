@@ -86,7 +86,7 @@ public class Robot extends TimedRobot {
         // robot's periodic
         // block in order for anything in the Command-based framework to work.
         CommandScheduler.getInstance().run();
-        vision.update();
+        // vision.update();
         SmartDashboard.putString("Alliance Color:",DriverStation.getAlliance().toString());
     }
 
@@ -163,6 +163,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void teleopPeriodic() {
+        m_robotContainer.arcadeDrive();
     }
 
 

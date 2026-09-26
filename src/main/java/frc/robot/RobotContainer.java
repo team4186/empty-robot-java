@@ -23,6 +23,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.turretcommands.AutoTurretPassToAlliance;
 import frc.robot.commands.turretcommands.AutoTurretTargeting;
 import frc.robot.commands.turretcommands.AutoTurretTargetingPose;
+import frc.robot.subsystems.ArcadeDriveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.motors.Components;
 import java.io.File;
@@ -45,8 +46,10 @@ public class RobotContainer {
     private final CommandXboxController driverXbox = new CommandXboxController(3);
     private final CommandPS5Controller driverPS5 = new CommandPS5Controller(4);
     private final CommandStadiaController driverStadia = new CommandStadiaController(5);
+
+
     private final CommandJoystick joystickDriver = new CommandJoystick(0); //set port 0 for stadia/joystick, whichever is being used
-    private final CommandJoystick joystickOperator = new CommandJoystick(1);
+    // private final CommandJoystick joystickOperator = new CommandJoystick(1);
 
     private final Components motorComponents = Components.getInstance();
 
@@ -55,6 +58,11 @@ public class RobotContainer {
     // Swerve drivebase
 //    private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
 //            "swerve/maxSwerve"));
+
+    private final ArcadeDriveSubsystem arcadeDrivebase = new ArcadeDriveSubsystem(
+            motorComponents.getLeftArcadeDriveMotor(),
+            motorComponents.getRightArcadeDriveMotor()
+    );
 
     // Arcade Drive Drivebase
 //    private final ArcadeSubsystem drivebase;
@@ -245,7 +253,7 @@ public class RobotContainer {
 
 
     public void setMotorBrake(boolean brake) {
-        drivebase.setMotorBrake(brake);
+        // drivebase.setMotorBrake(brake);
     }
 
 
@@ -255,10 +263,19 @@ public class RobotContainer {
         return res;
     }
 
+
+    // Reset Closed Loop Controls to neutral position or velocity respectively
     public void resetSubsystems(){
-        turretSubsystem.updateShooterSpeed(0.0);
-        spindexerSubsystem.stopMotors();
-        turretSubsystem.updateTurretRotation(0.0);
-        intakeSubsystem.stopPickup();
+//        turretSubsystem.updateShooterSpeed(0.0);
+//        turretSubsystem.updateTurretRotation(0.0);
     }
+
+
+    public void arcadeDrive() {
+        arcadeDrivebase.arcadeDrive(
+                attenuated(joystickDriver.getY(), 1,1 ),
+                attenuated(joystickDriver.getTwist(), 1, 1)
+        );
+    }
+
 }

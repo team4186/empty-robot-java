@@ -1,11 +1,21 @@
 package frc.robot.motors;
 
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
+import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import frc.robot.Constants.TurretConstants;
+
+/**
+ * The [Components] singleton can be used to configure and hold reference to hardware parts
+ * used by the [Robot].
+ *
+ * The only gain here is organizational, as it avoids cluttering in the [Robot] class scope.
+ */
 
 // Flexible motor creation for fast testing between systems
 public class Components {
@@ -16,17 +26,8 @@ public class Components {
     private SparkMax turretHoodMotor;
     private SparkFlex turretShooterMotor;
 
-    private SparkMax intakeExtensionStarboardMotor;
-    private SparkMax intakeExtensionPortMotor;
-    private SparkMax intakePickupMotor;
-
-    private SparkMax intakeTestMotor;
-
-    private SparkMax spindexerRotateMotor;
-    private SparkMax spindexerFeedMotor;
-    private SparkMax spindexerAssistMotor;
-    private SparkMax climbMotor;
-
+    private TalonSRX leftArcadeDriveMotor;
+    private TalonSRX rightArcadeDriveMotor;
 
     // private constructor to prevent public class creation
     private Components() { }
@@ -58,4 +59,31 @@ public class Components {
 //
 //        return turretShooterMotor;
 //    }
+
+    public TalonSRX getLeftArcadeDriveMotor() {
+        if ( leftArcadeDriveMotor == null ) {
+            leftArcadeDriveMotor = customConfigs.applyDefaultArcadeDriveConfig(
+                    new TalonSRX(11), // Leader
+                    new VictorSPX(10), // Follower 1
+                    new VictorSPX(12), // Follower 2
+                    false
+            );
+        }
+
+        return leftArcadeDriveMotor;
+    }
+
+    public TalonSRX getRightArcadeDriveMotor() {
+        if ( rightArcadeDriveMotor == null ){
+            rightArcadeDriveMotor = customConfigs.applyDefaultArcadeDriveConfig(
+                    new TalonSRX(7), // Leader
+                    new VictorSPX(3), // Follower 1
+                    new VictorSPX(4), // Follower 2
+                    false
+            );
+        }
+
+        return rightArcadeDriveMotor;
+    }
+
 }

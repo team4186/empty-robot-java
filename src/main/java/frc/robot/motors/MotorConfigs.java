@@ -1,5 +1,10 @@
 package frc.robot.motors;
 
+import com.ctre.phoenix.motorcontrol.InvertType;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPXConfiguration;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.*;
@@ -8,9 +13,7 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import frc.robot.Constants;
 import frc.robot.Constants.TurretConstants;
-import frc.robot.Robot;
-import frc.robot.RobotContainer;
-import frc.robot.Constants.NeoMotorConstants;
+
 
 // MotorConfigs Singleton for Subsystem Motors (Swerve Subsystem not included)
 public final class MotorConfigs {
@@ -25,6 +28,8 @@ public final class MotorConfigs {
         .smartCurrentLimit(50)
         .idleMode(SparkBaseConfig.IdleMode.kBrake);
 
+    private final TalonSRXConfiguration TalonBaseConfig = new TalonSRXConfiguration();
+    private final VictorSPXConfiguration VictorBaseConfig = new VictorSPXConfiguration();
 
     // private constructor to prevent public class creation
     private MotorConfigs() {}
@@ -98,7 +103,7 @@ public final class MotorConfigs {
     /**
      * Use this apply config a leader/follower motor pair in {@link Components} class.
      *
-     * @param motor SparkMax motor object needing configuration
+     * @param motorLeader SparkMax motor object needing configuration
      * @param inverse the motor direction
      *
      * @return SparkMax motor with applied config
@@ -186,4 +191,30 @@ public final class MotorConfigs {
 //
 //            return motor;
 //    }
+
+//    rightArcadeDriveMotor = customConfigs.applyDefaultArcadeDriveConfig(
+//            new TalonSRX(7), // Leader
+//                    new VictorSPX(3), // Follower 1
+//                    new VictorSPX(4), // Follower 2
+//                    false
+//                            );
+    public TalonSRX applyDefaultArcadeDriveConfig(
+            TalonSRX leader,
+            VictorSPX follower0,
+            VictorSPX follower1,
+            Boolean inverse
+    ) {
+        leader.configAllSettings(TalonBaseConfig);
+        follower0.configAllSettings(VictorBaseConfig);
+        follower1.configAllSettings(VictorBaseConfig);
+
+        follower0.follow(leader);
+        follower1.follow(leader);
+
+        leader.setInverted( inverse );
+        follower0.setInverted(InvertType.FollowMaster);
+        follower1.setInverted(InvertType.FollowMaster);
+
+        return leader;
+    }
 }
