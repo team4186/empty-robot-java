@@ -262,7 +262,7 @@ public final class Constants {
         public static final double HOOD_L2_POSITION = 25;
         public static final double HOOD_L3_POSITION = 35;
 
-=
+
         //  Key: Distance in Feet, Value: {ShooterSpeed, HoodAngle}
         /**
          *  Lookup Table KEY: Distance in Feed  Value: { ShooterSpeed, HoodAngle}

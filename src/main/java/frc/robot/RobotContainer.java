@@ -58,71 +58,40 @@ public class RobotContainer {
     private final Components motorComponents = Components.getInstance();
 
     // The robot's subsystems and commands are defined here...
-    private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
-            "swerve/maxSwerve"));
+
+    // Swerve drivebase
+//    private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
+//            "swerve/maxSwerve"));
+
+    // Arcade Drive Drivebase
+//    private final ArcadeSubsystem arcadeDrivebase;
 
     // Establish a Sendable Chooser that will be able to be sent to the
     // SmartDashboard, allowing selection of desired auto
     private final SendableChooser<Command> autoChooser;
 
-    // TODO: Test and uncomment subsystems
-    private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(
-            motorComponents.getIntakeExtensionStarboardMotor(),
-            motorComponents.getIntakeExtensionPortMotor(),
-            motorComponents.getIntakePickupMotor(),
-//            motorComponents.getIntakeExtensionMotorPair(),
-            new DigitalInput(IntakeConstants.EXTENDED_LSChannel_STARBOARD),
-            new DigitalInput(IntakeConstants.EXTENDED_LSChannel_PORT),
-            new DigitalInput(IntakeConstants.RETRACTED_LSChannel_STARBOARD),
-            new DigitalInput(IntakeConstants.RETRACTED_LSChannel_PORT)
-    );
+
+//    private final TurretSubsystem turretSubsystem = new TurretSubsystem(
+//            motorComponents.getTurretShooterMotor(),
+//            motorComponents.getTurretRotateMotor(),
+//            motorComponents.getTurretHoodMotor(),
+//            new DigitalInput(Constants.TurretConstants.HOOD_LIMIT_SWITCH),
+//            new DigitalInput(Constants.TurretConstants.TURRET_LEFT_LIMIT_SWITCH),
+//            new DigitalInput(Constants.TurretConstants.TURRET_RIGHT_LIMIT_SWITCH)
+//    );
 
 
-    private final SpindexerSubsystem spindexerSubsystem = new SpindexerSubsystem(
-            motorComponents.getSpindexerRotateMotor(),
-            motorComponents.getSpindexerFeedMotor(),
-            motorComponents.getSpindexerAssist()
-    );
-
-
-    private final ClimbSubsystem climbSubsystem = new ClimbSubsystem(
-            motorComponents.getClimbMotor(),
-            new DigitalInput(Constants.ClimbConstants.CLIMB_LSChannel)
-    );
-
-
-    private final TurretSubsystem turretSubsystem = new TurretSubsystem(
-            motorComponents.getTurretShooterMotor(),
-            motorComponents.getTurretRotateMotor(),
-            motorComponents.getTurretHoodMotor(),
-            new DigitalInput(Constants.TurretConstants.HOOD_LIMIT_SWITCH),
-            new DigitalInput(Constants.TurretConstants.TURRET_LEFT_LIMIT_SWITCH),
-            new DigitalInput(Constants.TurretConstants.TURRET_RIGHT_LIMIT_SWITCH)
-    );
-
-
-    //Intake Commands
-    ExtendIntakeCommand extendIntakeCommand = new ExtendIntakeCommand(intakeSubsystem);
-    RetractIntakeCommand retractIntakeCommand = new RetractIntakeCommand(intakeSubsystem);
-
-    //Auto All in One Commands
-    DriveBackAndShoot driveBackAndShootCommand = new DriveBackAndShoot(turretSubsystem,intakeSubsystem, drivebase,spindexerSubsystem);
-    DriveBackAndPrepare driveBackandLock = new DriveBackAndPrepare(drivebase, -1.0, 1.0);
-
-    //Me AND Rishab goon to femboys but no one will ever see this comment becasue it's at the bottom 3.
-
-    //Climb Commands
-    DeployClimbCommand deployClimbCommand = new DeployClimbCommand(climbSubsystem, Constants.ClimbConstants.CLIMB_SLOW_SPEED);
-    RetractClimbCommand retractClimbCommand = new RetractClimbCommand(climbSubsystem, Constants.ClimbConstants.CLIMB_SLOW_SPEED);
-
+    // Command Creation
     AutoTurretTargeting simpleTurretTracking = new AutoTurretTargeting(turretSubsystem);
     AutoTurretPassToAlliance simplePassing = new AutoTurretPassToAlliance(turretSubsystem);
     AutoTurretTargetingPose simplePoseTracking = new AutoTurretTargetingPose(turretSubsystem);
 
-    // NOTE:  Coords are odd for Joysticks: https://docs.wpilib.org/en/stable/docs/software/basic-programming/joystick.html
+
+    // NOTE: Coordinates are odd for Joysticks, read this if unsure: https://docs.wpilib.org/en/stable/docs/software/basic-programming/joystick.html
+
     /**
      * Converts driver input into a field-relative ChassisSpeeds that is controlled
-     * by angular velocity.
+     * by angular velocity for Swerve Subsystem
      */
     SwerveInputStream driveAngularVelocityBlueJoystick = SwerveInputStream.of(
                     drivebase.getSwerveDrive(),
@@ -183,7 +152,7 @@ public class RobotContainer {
         // Configure the trigger bindings
         DriverStation.silenceJoystickConnectionWarning(true);
 
-        // Create the NamedCommands that will be used in PathPlanner
+        // Register NamedCommands that will be used in PathPlanner if using custom created commands
         NamedCommands.registerCommand("test", Commands.print("I EXIST"));
         NamedCommands.registerCommand("climb_arm_up",Commands.runOnce(() ->
                 climbSubsystem.simpleClimbDeploy(1.0), climbSubsystem).repeatedly());
@@ -195,8 +164,6 @@ public class RobotContainer {
         NamedCommands.registerCommand("turret_targeting", simplePoseTracking);
 
 
-
-
         //Have the autoChooser pull in all PathPlanner autos as options
         autoChooser = AutoBuilder.buildAutoChooser();
 
@@ -204,39 +171,6 @@ public class RobotContainer {
         autoChooser.setDefaultOption("Do Nothing", Commands.runOnce(drivebase::zeroGyroWithAlliance)
                 .andThen(Commands.none()));
 
-        // Add a simple auto option to have the robot drive forward for 1 second then
-        // stop
-        autoChooser.addOption("Drive Forward",
-                Commands.runOnce(drivebase::zeroGyroWithAlliance).withTimeout(.2)
-                .andThen(drivebase.driveForward().withTimeout(1)));
-
-        autoChooser.addOption("Drive Backward",
-                Commands.runOnce(drivebase::zeroGyroWithAlliance).withTimeout(.2)
-                        .andThen(drivebase.driveBackward().withTimeout(1)));
-
-//        autoChooser.addOption(
-//                "Back Up and Shoot",
-//                Commands.runOnce(drivebase::zeroGyroWithAlliance).withTimeout(.2)
-//                        .andThen( turretSubsystem.setShooterMotor(3000).withTimeout(1))
-//                        .andThen(drivebase.driveBackward().withTimeout(1.0))
-//                        .andThen(Commands.run(()->turretSubsystem.moveHoodUp(5,0.1)).withTimeout(0.6))
-//                        .andThen(Commands.run(spindexerSubsystem::feed, spindexerSubsystem).withTimeout(10.0))
-//
-//        );
-//        autoChooser.addOption(
-//                "Back Up and Shoot with shuffle",
-//                Commands.runOnce(drivebase::zeroGyroWithAlliance).withTimeout(.2)
-//                        .andThen( turretSubsystem.setShooterMotor(3000).withTimeout(1))
-//                        .andThen(drivebase.driveForward().withTimeout(1.0))
-//                        .andThen(Commands.run(()->turretSubsystem.moveHoodUp(5,0.1)).withTimeout(0.6))
-//                        .andThen(Commands.run(spindexerSubsystem::feed, spindexerSubsystem).withTimeout(7.0))
-//                        .andThen(Commands.run(intakeSubsystem::extendIntake,intakeSubsystem).withTimeout(1.0))
-//                        .andThen(Commands.run(intakeSubsystem::retractIntake,intakeSubsystem).withTimeout(1.0))
-//                        .andThen(Commands.run(spindexerSubsystem::feed, spindexerSubsystem).withTimeout(5.0))
-//        );
-
-
-        autoChooser.addOption("Back Up and Shoot (Better)", driveBackAndShootCommand);
 
         // Put the autoChooser on the SmartDashboard
         SmartDashboard.putData("Auto Chooser", autoChooser);
