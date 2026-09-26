@@ -43,7 +43,7 @@ public final class MotorConfigs {
 
 
     /**
-     * Use this apply config to motor in {@link Components} class.
+     * Use this apply config a single motor in {@link Components} class.
      *
      * @param motor SparkMax motor object needing configuration
      * @param inverse the motor direction
@@ -98,56 +98,14 @@ public final class MotorConfigs {
     }
 
 
-    // TODO: Implement for individual motor
-    public SparkMax applyTurretHoodSparkConfig(
-            SparkMax motor,
-            boolean inverse
-    ) {
-        SparkBaseConfig config = DefaultSparkMaxConfig;
-
-        config
-                .inverted(inverse)
-                .smartCurrentLimit(TurretConstants.HOOD_SMART_CURRENT_LIMIT)
-                .idleMode(TurretConstants.HOOD_IDLE_MODE);
-
-        config.encoder
-                .positionConversionFactor(TurretConstants.HOOD_POSITION_CONVERSION_FACTOR)
-                .velocityConversionFactor(TurretConstants.HOOD_VELOCITY_CONVERSION_FACTOR);
-
-        config.closedLoop
-                .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                // Set PID values for position control. We don't need to pass a closed loop
-                // slot, as it will default to slot 0.
-                .pid(
-                        TurretConstants.HOOD_P,
-                        TurretConstants.HOOD_I,
-                        TurretConstants.HOOD_D,
-                        ClosedLoopSlot.kSlot0)
-                .outputRange(
-                        TurretConstants.HOOD_MIN_OUTPUT,
-                        TurretConstants.HOOD_MAX_OUTPUT,
-                        ClosedLoopSlot.kSlot0)
-                .allowedClosedLoopError(
-                        TurretConstants.HOOD_ERROR_THRESHOLD,
-                        ClosedLoopSlot.kSlot0)
-                .feedForward
-                .kS(
-                        TurretConstants.HOOD_KS,
-                        ClosedLoopSlot.kSlot0)
-                .kV(
-                        TurretConstants.HOOD_KV,
-                        ClosedLoopSlot.kSlot0);
-
-        motor.configure(
-                config,
-                ResetMode.kResetSafeParameters,
-                PersistMode.kPersistParameters
-        );
-
-        return motor;
-    }
-
-
+    /**
+     * Use this apply config a leader/follower motor pair in {@link Components} class.
+     *
+     * @param motor SparkMax motor object needing configuration
+     * @param inverse the motor direction
+     *
+     * @return SparkMax motor with applied config
+     */
     public SparkFlex applyShooterSparkConfig(
         SparkFlex motorLeader,
         SparkFlex motorFollower,
@@ -207,7 +165,7 @@ public final class MotorConfigs {
         return motorLeader;
     }
 
-
+    // Example of No Closed Loop Configuration
     public SparkMax applyIntakeExtensionSparkConfig(
         SparkMax motor,
         boolean inverse
@@ -230,166 +188,5 @@ public final class MotorConfigs {
             );
 
             return motor;
-    }
-
-
-    public SparkMax applyIntakePickupSparkConfig(
-        SparkMax motor,
-        boolean inverse
-    ) {
-            SparkBaseConfig config = DefaultSparkMaxConfig;
-
-            config
-                    .inverted(inverse)
-                    .smartCurrentLimit(Constants.NeoMotorConstants.SMART_CURRENT_LIMIT_REGULAR)
-                    .idleMode(IntakeConstants.PICKUP_IDLE_MODE);
-
-            config.encoder
-                    .positionConversionFactor(IntakeConstants.PICKUP_POSITION_CONVERSION_FACTOR)
-                    .velocityConversionFactor(IntakeConstants.PICKUP_VELOCITY_CONVERSION_FACTOR);
-
-            config.closedLoop
-                .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                .pid(
-                        IntakeConstants.PICKUP_P,
-                        IntakeConstants.PICKUP_I,
-                        IntakeConstants.PICKUP_D,
-                        ClosedLoopSlot.kSlot1)
-                .outputRange(
-                        IntakeConstants.PICKUP_MIN_OUTPUT,
-                        IntakeConstants.PICKUP_MAX_OUTPUT,
-                        ClosedLoopSlot.kSlot1) // Range of total voltage
-                .allowedClosedLoopError(
-                        IntakeConstants.PICKUP_ERROR_THRESHOLD,
-                        ClosedLoopSlot.kSlot1)
-                .feedForward
-                .kS(IntakeConstants.PICKUP_KS,
-                        ClosedLoopSlot.kSlot1)
-                .kV(
-                        IntakeConstants.PICKUP_KV,
-                        ClosedLoopSlot.kSlot1);
-
-            motor.configure(
-                    config,
-                    ResetMode.kResetSafeParameters,
-                    PersistMode.kPersistParameters
-            );
-            return motor;
-    }
-
-
-    public SparkMax applyClimbSparkConfig(
-        SparkMax motor,
-        boolean inverse
-    ) {
-            SparkBaseConfig config = DefaultSparkMaxConfig;
-
-            config
-                    .inverted(inverse)
-                    .smartCurrentLimit(Constants.NeoMotorConstants.SMART_CURRENT_LIMIT_REGULAR)
-                    .idleMode(ClimbConstants.IDLE_MODE);
-
-            config.encoder
-                    .positionConversionFactor(ClimbConstants.CLIMB_POSITION_CONVERSION_FACTOR)
-                    .velocityConversionFactor(ClimbConstants.CLIMB_VELOCITY_CONVERSION_FACTOR);
-
-            motor.configure(
-                    config,
-                    ResetMode.kResetSafeParameters,
-                    PersistMode.kPersistParameters
-            );
-
-            return motor;
-    }
-
-
-    // TODO: Implement for individual motor
-    public SparkMax applySpindexerRotateSparkConfig(
-        SparkMax motor,
-        boolean inverse
-    ) {
-            SparkBaseConfig config = DefaultSparkMaxConfig;
-
-            config
-                    .inverted(inverse)
-                    .smartCurrentLimit(Constants.NeoMotorConstants.SMART_CURRENT_LIMIT_REGULAR)
-                    .idleMode(SpindexerConstants.ROTATE_IDLE_MODE);
-
-            config.encoder
-                    .positionConversionFactor(SpindexerConstants.ROTATE_POSITION_CONVERSION_FACTOR)
-                    .velocityConversionFactor(SpindexerConstants.ROTATE_VELOCITY_CONVERSION_FACTOR);
-
-            motor.configure(
-                    config,
-                    ResetMode.kResetSafeParameters,
-                    PersistMode.kPersistParameters
-            );
-
-            return motor;
-    }
-
-
-    // TODO: Implement for individual motor
-    public SparkMax applySpindexerFeedSparkConfig(
-        SparkMax motor,
-        boolean inverse
-    ) {
-            SparkBaseConfig config = DefaultSparkMaxConfig;
-
-            config
-                    .inverted(inverse)
-                    .smartCurrentLimit(SpindexerConstants.FEED_CURRENT_LIMIT)
-                    .idleMode(SpindexerConstants.FEED_IDLE_MODE);
-
-            config.encoder
-                    .positionConversionFactor(SpindexerConstants.FEED_POSITION_CONVERSION_FACTOR)
-                    .velocityConversionFactor(SpindexerConstants.FEED_VELOCITY_CONVERSION_FACTOR);
-
-            motor.configure(
-                    config,
-                    ResetMode.kResetSafeParameters,
-                    PersistMode.kPersistParameters
-            );
-
-            return motor;
-    }
-
-    public SparkMax applySpindexerAssistSparkConfig(
-            SparkMax motor,
-            boolean inverse
-    ) {
-        SparkBaseConfig config = DefaultSparkMaxConfig;
-
-        config
-                .inverted(inverse)
-                .smartCurrentLimit(SpindexerConstants.ASSIST_CURRENT_LIMIT)
-                .idleMode(SpindexerConstants.ASSIST_IDLE_MODE);
-
-        config.encoder
-                .positionConversionFactor(SpindexerConstants.ASSIST_POSITION_CONVERSION_FACTOR)
-                .velocityConversionFactor(SpindexerConstants.ASSIST_VELOCITY_CONVERSION_FACTOR);
-
-        config.closedLoop
-                .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                .pid(
-                        SpindexerConstants.ASSIST_P,
-                        SpindexerConstants.ASSIST_I,
-                        SpindexerConstants.ASSIST_D,
-                        ClosedLoopSlot.kSlot1)
-                .feedForward
-                .kS(
-                        SpindexerConstants.ASSIST_KS,
-                        ClosedLoopSlot.kSlot1)
-                .kV(
-                        SpindexerConstants.ASSIST_KV,
-                        ClosedLoopSlot.kSlot1);
-
-        motor.configure(
-                config,
-                ResetMode.kResetSafeParameters,
-                PersistMode.kPersistParameters
-        );
-
-        return motor;
     }
 }
