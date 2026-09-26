@@ -17,39 +17,27 @@ import java.util.Map;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 
 
+// Optional Limelight Class to create custom vision functionality
 public class LimelightRunner {
 
     private static final LimelightRunner instance = new LimelightRunner();
 
+    // Update with latest Field Layout
     public static final AprilTagFieldLayout fieldLayout = AprilTagFieldLayout.loadField(
         AprilTagFields.k2026RebuiltWelded);
 
     public final String limelightTurret = LimelightConstants.LIMELIGHT_TURRET;
     public final String limelightClimb = LimelightConstants.LIMELIGHT_ROBOT;
-//    private final DoubleSubscriber tvSub;
-//    private final DoubleSubscriber txSub;
-//    private final DoubleSubscriber tySub;
-//    private final DoublePublisher ledPub;
 
 
     private LimelightRunner(){
-//        NetworkTable turretTable = NetworkTableInstance.getDefault().getTable(Constants.LimelightConstants.LIMELIGHT_TURRET);
-//        NetworkTable robotTable = NetworkTableInstance.getDefault().getTable(Constants.LimelightConstants.LIMELIGHT_ROBOT);
-//
-//        // TODO: Set Limelight Positions programmatically
-//
-//        tvSub = turretTable.getDoubleTopic("tv").subscribe(0.0);
-//        txSub = turretTable.getDoubleTopic("tx").subscribe(0.0);
-//        tySub = turretTable.getDoubleTopic("ty").subscribe(0.0);
-//        ledPub = turretTable.getDoubleTopic("ledMode").publish();
-
-
     }
 
 //
     public static LimelightRunner getInstance(){ return instance; }
 
 
+    // Publish Relavant vision information to SmartDashboard for Subsystems to Subscribe to
     public void update() {
         SmartDashboard.putBoolean("Has Target Tag?", LimelightHelpers.getTV(LimelightConstants.LIMELIGHT_TURRET));
         SmartDashboard.putNumber("tx", LimelightHelpers.getTX(LimelightConstants.LIMELIGHT_TURRET));
@@ -107,31 +95,6 @@ public class LimelightRunner {
         double distanceMeters = Math.sqrt((Math.pow(poseOne.getY() - poseTwo.getY(), 2) + Math.pow(poseOne.getX() - poseTwo.getX(), 2)));
         return distanceMeters * 3.28084;
     }
-
-
-    /**
-     * Information on how to set camera pose based on turret camera
-     * Update the camera pose every loop based on your mechanism's current state
-//    double forward = 0.3;  // meters, forward from robot center
-//    double side = 0.0;     // meters, left of robot center
-//    double up = 0.5;       // meters, up from robot center
-//    double roll = 0.0;     // degrees
-//    double pitch = -30.0;  // degrees (e.g. camera tilted down as arm moves)
-//    double yaw = 0.0;      // degrees
-//
-//    LimelightHelpers.setCameraPose_RobotSpace("",
-//        forward, side, up, roll, pitch, yaw
-//    );
-//
-//
-//     Us
-//     Seed the internal IMU with your external gyro (call while disabled)
-//    LimelightHelpers.SetIMUMode("", 1);
-//
-//    // Switch to internal IMU with external assist when enabled
-//    LimelightHelpers.SetIMUMode("", 4);
-//    LimelightHelpers.SetIMUAssistAlpha("", 0.001);  // Adjust correction strength
-*/
 
 
     /**

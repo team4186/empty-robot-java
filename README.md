@@ -18,7 +18,7 @@ If you want to push code directly, you need to ask for writing permissions.
 
 - [ ] Get writing permissions (optional)
     - [ ] Join the Aztechs programming team
-        - [ ] Create a Github account
+        - [ ] Create a GitHub account
         - [ ] Go to the `#programming` channel in the Aztechs Slack and ask permissions to the Github repositories
 
 ## New robot checklist
@@ -30,7 +30,8 @@ If you want to push code directly, you need to ask for writing permissions.
 - [ ] Update Rio Software [link](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-3/imaging-your-roborio.html)
 - [ ] Radio [link](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-3/radio-programming.html)
 - [ ] Check for other hardware that needs update
-- [ ] Update Swerve Template
+- [ ] Update Swerve Template libraries to latest
+- [ ] Update vendordeps
 
 ## Getting Started with Sim
 - [ ] Download WPILib [link](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/wpilib-setup.html#downloading)
