@@ -1,14 +1,12 @@
 package frc.robot.commands.auto;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 
 public class SimpleSequentialAutoTemplate extends Command {
 
     private TurretSubsystem turret;
-    private IntakeSubsystem intake;
     private SwerveSubsystem swerve;
     private boolean isCommandFinished;
 
@@ -25,7 +23,6 @@ public class SimpleSequentialAutoTemplate extends Command {
     public SimpleSequentialAutoTemplate(){
         this.isCommandFinished = false;
         this.turret = turret;
-        this.intake = intake;
         this.swerve = swerve;
     }
 

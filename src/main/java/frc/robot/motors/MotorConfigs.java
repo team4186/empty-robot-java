@@ -8,9 +8,6 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import frc.robot.Constants;
 import frc.robot.Constants.TurretConstants;
-import frc.robot.Constants.IntakeConstants;
-import frc.robot.Constants.SpindexerConstants;
-import frc.robot.Constants.ClimbConstants;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.Constants.NeoMotorConstants;
@@ -166,27 +163,27 @@ public final class MotorConfigs {
     }
 
     // Example of No Closed Loop Configuration
-    public SparkMax applyIntakeExtensionSparkConfig(
-        SparkMax motor,
-        boolean inverse
-    ) {
-            SparkBaseConfig config = DefaultSparkMaxConfig;
-
-            config
-                    .inverted(inverse)
-                    .smartCurrentLimit(Constants.NeoMotorConstants.SMART_CURRENT_LIMIT_550)
-                    .idleMode(IntakeConstants.EXTENSION_IDLE_MODE);
-
-            config.encoder
-                    .positionConversionFactor(IntakeConstants.EXTENSION_POSITION_CONVERSION_FACTOR)
-                    .velocityConversionFactor(IntakeConstants.EXTENSION_VELOCITY_CONVERSION_FACTOR);
-
-            motor.configure(
-                    config,
-                    ResetMode.kResetSafeParameters,
-                    PersistMode.kPersistParameters
-            );
-
-            return motor;
-    }
+//    public SparkMax applyIntakeExtensionSparkConfig(
+//        SparkMax motor,
+//        boolean inverse
+//    ) {
+//            SparkBaseConfig config = DefaultSparkMaxConfig;
+//
+//            config
+//                    .inverted(inverse)
+//                    .smartCurrentLimit(Constants.NeoMotorConstants.SMART_CURRENT_LIMIT_550)
+//                    .idleMode(IntakeConstants.EXTENSION_IDLE_MODE);
+//
+//            config.encoder
+//                    .positionConversionFactor(IntakeConstants.EXTENSION_POSITION_CONVERSION_FACTOR)
+//                    .velocityConversionFactor(IntakeConstants.EXTENSION_VELOCITY_CONVERSION_FACTOR);
+//
+//            motor.configure(
+//                    config,
+//                    ResetMode.kResetSafeParameters,
+//                    PersistMode.kPersistParameters
+//            );
+//
+//            return motor;
+//    }
 }

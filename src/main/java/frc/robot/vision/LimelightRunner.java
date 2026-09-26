@@ -265,44 +265,6 @@ public class LimelightRunner {
     }
 
 
-    /**
-     * For Limelight turret camera targeting retrieves available tag, switches to pipeline, takes measurement,
-     * then resets pipeline back to general pipeline
-     *
-     * @return double array: { Response (-1 Fail, 0 Tag Found, 1 Success), xOffset to target, distance in feet }
-     */
-    public double[] getTurretTagInfoWithOffsetPipeline(){
-        // Default values
-        double status = -1.0;
-        double dist = 0.0;
-        double txOffset = 0.0;
-        int tagId = (int) getAprilTagId(limelightTurret);
-
-        // is tag present and get tag id
-        if ( hasTargetTurret() ) {
-            int pipelineId = Constants.StructureConstants.TURRET_FIDUCIAL_PIPELINE.get(tagId);
-
-            // swap to correct pipeline
-            switchToPipeline(limelightTurret, pipelineId);
-            status = 0.0;
-
-            // Double check target Tag is available in new pipeline
-            if (hasTargetTurret()) {
-                status = 1.0;
-                dist = getDistanceToTagWithHelperWRTCamera( limelightTurret ) * 3.28084;
-                        // getTurretTagDistanceInchesTrig( LimelightHelpers.getTY( limelightTurret ) ) / 12.0;
-                txOffset = LimelightHelpers.getTX( limelightTurret );
-            }
-        }
-
-        // Switch back to default pipeline
-        switchToPipeline(limelightTurret, 0);
-
-        SmartDashboard.putNumber("Turret_Pipeline_Status", status);
-
-        return new double[]{ status, txOffset, dist };
-    }
-
     // Close function required for Subscribers/Publishers
     public void close(){}
 }

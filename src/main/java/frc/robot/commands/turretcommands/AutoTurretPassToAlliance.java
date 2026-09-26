@@ -63,7 +63,7 @@ public class AutoTurretPassToAlliance extends Command {
 
         double swerve_yaw = SmartDashboard.getNumber("Swerve_Yaw_Angle", 0.0);
 
-        turretSubsystem.moveHoodUp(Constants.TurretConstants.HOOD_L3_POSITION, Constants.TurretConstants.HOOD_L3_SPEED);
+        // turretSubsystem.moveHoodUp(Constants.TurretConstants.HOOD_L3_POSITION, Constants.TurretConstants.HOOD_L3_SPEED);
         double xOffset = 0.0;
 
 

@@ -5,10 +5,7 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
-import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.TurretConstants;
-import frc.robot.Constants.ClimbConstants;
-import frc.robot.Constants.SpindexerConstants;
 
 // Flexible motor creation for fast testing between systems
 public class Components {
