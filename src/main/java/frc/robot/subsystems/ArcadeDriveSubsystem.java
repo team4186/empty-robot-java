@@ -46,7 +46,7 @@ public class ArcadeDriveSubsystem extends SubsystemBase {
 //                )
 //    }
     public void arcadeDrive(Double forward, Double turn){
-//        manualDrive(
+        diffDrive.arcadeDrive(forward, turn);
     }
 
     public void stopMotors(){

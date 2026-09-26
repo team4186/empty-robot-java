@@ -196,8 +196,9 @@ public class RobotContainer {
 //            joystickDriver.button(11).whileTrue(driveFieldOrientedBlueAllianceSlow);
             arcadeDrivebase.setDefaultCommand(
                     Commands.runOnce(
-                            this::arcadeDrive
-                    ).repeatedly() );
+                            this::arcadeDrive,
+                            arcadeDrivebase
+                    ).repeatedly());
         }
 
         if (Robot.isSimulation()) {

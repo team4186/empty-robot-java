@@ -79,7 +79,7 @@ public class Components {
                     new TalonSRX(7), // Leader
                     new VictorSPX(3), // Follower 1
                     new VictorSPX(4), // Follower 2
-                    false
+                    true
             );
         }
 
