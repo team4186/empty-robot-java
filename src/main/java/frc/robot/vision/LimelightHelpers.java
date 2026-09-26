@@ -1,3 +1,5 @@
+// Update This Single File Library From Latest Release: https://docs.limelightvision.io/docs/docs-limelight/apis/limelight-lib
+
 //LimelightHelpers v1.14 (REQUIRES LLOS 2026.0 OR LATER)
 package frc.robot.vision;
 
