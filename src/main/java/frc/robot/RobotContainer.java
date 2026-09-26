@@ -264,8 +264,8 @@ public class RobotContainer {
 
     public void arcadeDrive() {
         arcadeDrivebase.arcadeDrive(
-                attenuated(joystickDriver.getY(), 1,1 ),
-                attenuated(joystickDriver.getTwist(), 1, 1)
+                attenuated(joystickDriver.getY(),2,0.50),
+                attenuated(joystickDriver.getTwist(),2,0.40)
         );
     }
 
