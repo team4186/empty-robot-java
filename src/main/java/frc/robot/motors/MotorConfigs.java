@@ -19,7 +19,8 @@ import frc.robot.Constants.TurretConstants;
 public final class MotorConfigs {
     private static final MotorConfigs instance = new MotorConfigs();
 
-    // Default Configs
+
+    // Default Configs for neo motors can be found here: https://docs.revrobotics.com/brushless/home/faq
     private final SparkBaseConfig DefaultSparkMaxConfig = new SparkMaxConfig()
         .smartCurrentLimit(50)
         .idleMode(SparkBaseConfig.IdleMode.kBrake);
@@ -31,10 +32,12 @@ public final class MotorConfigs {
     private final TalonSRXConfiguration TalonBaseConfig = new TalonSRXConfiguration();
     private final VictorSPXConfiguration VictorBaseConfig = new VictorSPXConfiguration();
 
-    // private constructor to prevent public class creation
+
+    // Private constructor to prevent public class creation
     private MotorConfigs() {}
 
 
+    // If instance is needed
     public static MotorConfigs getInstance() { return instance; }
 
 
@@ -44,8 +47,22 @@ public final class MotorConfigs {
     public SparkBaseConfig applyDefaultSparkFlexConfig() { return DefaultSparkFlexConfig; }
 
 
+    /*
+      Consider the following when creating a configuration:
+
+      1. Single motor or Group of motors with 1 leader and 1+ followers
+            Do the multiple motors conflict or cooperate?
+      2. Closed-Loop values taken from testing using RevRoboticsV2 dashboard
+      3. Conversion factor for rpm and/or position, find this using gear ratios to turn rotations into useful units
+      4. If closed-loop for velocity update the depth and period to remove delay between decisions
+            .quadratureAverageDepth(Constants.VELOCITY_AVERAGE_DEPTH)
+            .quadratureMeasurementPeriod(Constants.VELOCITY_MEASUREMENT_PERIOD);
+      5. Are you using limit switches tied to the motor controllers? If yes, then add to configuration
+     */
+
+
     /**
-     * Use this apply config a single motor in {@link Components} class.
+     * Use this apply config a single motor in {@link Components} class. Apply closed loop constants from Constants File
      *
      * @param motor SparkMax motor object needing configuration
      * @param inverse the motor direction
@@ -167,37 +184,16 @@ public final class MotorConfigs {
         return motorLeader;
     }
 
-    // Example of No Closed Loop Configuration
-//    public SparkMax applyIntakeExtensionSparkConfig(
-//        SparkMax motor,
-//        boolean inverse
-//    ) {
-//            SparkBaseConfig config = DefaultSparkMaxConfig;
-//
-//            config
-//                    .inverted(inverse)
-//                    .smartCurrentLimit(Constants.NeoMotorConstants.SMART_CURRENT_LIMIT_550)
-//                    .idleMode(IntakeConstants.EXTENSION_IDLE_MODE);
-//
-//            config.encoder
-//                    .positionConversionFactor(IntakeConstants.EXTENSION_POSITION_CONVERSION_FACTOR)
-//                    .velocityConversionFactor(IntakeConstants.EXTENSION_VELOCITY_CONVERSION_FACTOR);
-//
-//            motor.configure(
-//                    config,
-//                    ResetMode.kResetSafeParameters,
-//                    PersistMode.kPersistParameters
-//            );
-//
-//            return motor;
-//    }
 
-//    rightArcadeDriveMotor = customConfigs.applyDefaultArcadeDriveConfig(
-//            new TalonSRX(7), // Leader
-//                    new VictorSPX(3), // Follower 1
-//                    new VictorSPX(4), // Follower 2
-//                    false
-//                            );
+    /**
+     *
+     *
+     * @param leader
+     * @param follower0
+     * @param follower1
+     * @param inverse swap positive and negative direction for motor
+     * @return TalonSRX leader motor with applied configuration
+     */
     public TalonSRX applyDefaultArcadeDriveConfig(
             TalonSRX leader,
             VictorSPX follower0,
