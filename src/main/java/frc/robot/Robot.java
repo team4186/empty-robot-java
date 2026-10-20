@@ -43,7 +43,8 @@ public class Robot extends TimedRobot {
 
     /**
      * This function is run when the robot is first started up and should be used
-     * for any initialization code.
+     * for any initialization code. During competition, we assume the robot is placed
+     * in a desirable starting position before starting up.
      */
     @Override
     public void robotInit() {
@@ -61,7 +62,7 @@ public class Robot extends TimedRobot {
             DriverStation.silenceJoystickConnectionWarning(true);
         }
 
-        // Update Driver Alliance information if available
+        // Update Driver Alliance Information (Red or Blue side)
         m_robotContainer.updateDriverAllianceInfo();
     }
 
@@ -86,8 +87,10 @@ public class Robot extends TimedRobot {
         // robot's periodic
         // block in order for anything in the Command-based framework to work.
         CommandScheduler.getInstance().run();
-        // vision.update();
         SmartDashboard.putString("Alliance Color:",DriverStation.getAlliance().toString());
+
+        // Updating vision periodic for targeting and field coordinate updates
+        // vision.update();
     }
 
 
@@ -102,6 +105,9 @@ public class Robot extends TimedRobot {
     }
 
 
+    /**
+     * This function is called every 20 ms during Disabled Mode, put robot in safe default position and lock the wheels.
+     */
     @Override
     public void disabledPeriodic() {
         if (disabledTimer.hasElapsed(Constants.DrivebaseConstants.WHEEL_LOCK_TIME)) {
@@ -141,6 +147,7 @@ public class Robot extends TimedRobot {
     public void autonomousPeriodic() {}
 
 
+    // Prepare
     @Override
     public void teleopInit() {
         // This makes sure that the autonomous stops running when
