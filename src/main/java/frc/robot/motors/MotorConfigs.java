@@ -15,7 +15,11 @@ import frc.robot.Constants;
 import frc.robot.Constants.TurretConstants;
 
 
-// MotorConfigs Singleton for Subsystem Motors (Swerve Subsystem not included)
+/**
+ * The [MotorConfigs] singleton can be used to configure MotorControllers used by the [Robot].
+ *
+ * The only gain here is organizational, as it avoids cluttering in the [Robot] class scope.
+ */
 public final class MotorConfigs {
     private static final MotorConfigs instance = new MotorConfigs();
 

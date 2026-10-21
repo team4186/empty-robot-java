@@ -16,8 +16,12 @@ import java.util.Map;
 
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 
-
-// Optional Limelight Class to create custom vision functionality
+/**
+ * The [LimelightRunner] singleton can be used to publish vision information and as an entry point to define
+ * custom interactions with the limelight(s) used by the [Robot].
+ *
+ * The gain here is partially organizational but also as an extension of the [LimelightHelpers] library.
+ */
 public class LimelightRunner {
 
     private static final LimelightRunner instance = new LimelightRunner();
@@ -30,35 +34,20 @@ public class LimelightRunner {
     public final String limelightClimb = LimelightConstants.LIMELIGHT_ROBOT;
 
 
-    private LimelightRunner(){
-    }
+    /**
+     * Private Constructor
+     */
+    private LimelightRunner(){ }
 
-//
+
     public static LimelightRunner getInstance(){ return instance; }
 
 
-    // Publish Relavant vision information to SmartDashboard for Subsystems to Subscribe to
+    // Publish Relevant limelight vision information to Network Tables for Subsystems to check
     public void update() {
-        SmartDashboard.putBoolean("Has Target Tag?", LimelightHelpers.getTV(LimelightConstants.LIMELIGHT_TURRET));
-        SmartDashboard.putNumber("tx", LimelightHelpers.getTX(LimelightConstants.LIMELIGHT_TURRET));
-        SmartDashboard.putNumber("ty", LimelightHelpers.getTY(LimelightConstants.LIMELIGHT_TURRET));
-        // SmartDashboard.putNumber("", hasTargetClimber());
-
-        double distInInches = getTurretTagDistanceInchesTrig( LimelightHelpers.getTY(LimelightConstants.LIMELIGHT_TURRET) );
-        SmartDashboard.putNumber("Turret AprilTag Dist w/Trig Inches", distInInches);
-        SmartDashboard.putNumber("Turret AprilTag Dist w/Trig Feet", distInInches / 12.0);
-        SmartDashboard.putNumber("Turret AprilTag Dist w/Trig Meters", distInInches * 0.0254);
-        SmartDashboard.putNumber("Turret AprilTag Dist w/Helper W.R.T. Camera Feet", getDistanceToTagWithHelperWRTCamera( limelightTurret ) * 3.28084);
-        SmartDashboard.putNumber("Turret AprilTag Dist w/Helper W.R.T. Robot Feet", getDistanceToTagWithHelperWRTRobot( limelightTurret ) * 3.28084);
-
-        SmartDashboard.putNumber("Turret-Tag-Id", getAprilTagId( limelightTurret ));
-
-        if(LimelightHelpers.getTV( limelightClimb )){
-            LimelightHelpers.setLEDMode_ForceOn( limelightClimb );
-        }else{
-            LimelightHelpers.setLEDMode_ForceOff( limelightClimb );
-        }
-
+        SmartDashboard.putBoolean("Vision_robot_hasTargetTag", LimelightHelpers.getTV(LimelightConstants.LIMELIGHT_ROBOT));
+        SmartDashboard.putNumber("Vision_robot_tx", LimelightHelpers.getTX(LimelightConstants.LIMELIGHT_ROBOT));
+        SmartDashboard.putNumber("Vision_robot_ty", LimelightHelpers.getTY(LimelightConstants.LIMELIGHT_ROBOT));
     }
 
 
@@ -98,7 +87,7 @@ public class LimelightRunner {
 
 
     /**
-     * Updates pose using limelight pose estimation
+     * Updates pose using Limelight Pose Estimation MegaTag2 pipeline
      */
     public void updatePoseEstimate(SwerveDrive swerveDrive) {
         double robotYaw = swerveDrive.getYaw().getDegrees();
